@@ -73,6 +73,7 @@ function defaults(id) {
     stats: {
       earned: 0, spent: 0, won: 0, lost: 0,
       dropsClaimed: 0, streak: 0, streakTotal: 0,
+      flagStreak: 0, flagStreakTotal: 0, boxStreak: 0, boxStreakTotal: 0,
       robWins: 0, crimes: 0, dungeonWins: 0
     },
     gear: { axe: null, rod: null, sword: null },

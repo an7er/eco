@@ -1,7 +1,7 @@
 const config = require('./config');
 const db = require('./db');
 const eco = require('./economy');
-const { randInt, codeGen, pick, baseEmbed, money } = require('./utils');
+const { randInt, pick, baseEmbed, money } = require('./utils');
 
 // Replace this with any pirate GIF/image URL you like.
 const PIRATE_GIF = 'https://i.pinimg.com/originals/88/1a/98/881a988f92d5a2d602e881f8d4f699f7.gif';
@@ -32,6 +32,21 @@ const COUNTRIES = [
 
 const flagImage = c => `https://flagcdn.com/w320/${c.code}.png`;
 
+function pirateCode() {
+  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const lower = 'abcdefghijkmnopqrstuvwxyz';
+  const digits = '23456789';
+  const chars = [
+    pick(upper.split('')), pick(lower.split('')), pick(digits.split('')),
+    pick((upper + lower + digits).split(''))
+  ];
+  for (let i = chars.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [chars[i], chars[j]] = [chars[j], chars[i]];
+  }
+  return chars.join('');
+}
+
 let client = null;
 let activeDrop = null;
 let nextTimer = null;
@@ -44,9 +59,11 @@ function setNotifier(fn) { notifier = fn; }
 function resetAllStreaks() {
   for (const id of db.allUsers()) {
     const u = eco.get(id);
-    if (u.stats.streak || u.stats.streakTotal) {
-      u.stats.streak = 0;
-      u.stats.streakTotal = 0;
+    const s = u.stats;
+    if (s.streak || s.streakTotal || s.flagStreak || s.flagStreakTotal || s.boxStreak || s.boxStreakTotal) {
+      s.streak = 0; s.streakTotal = 0;
+      s.flagStreak = 0; s.flagStreakTotal = 0;
+      s.boxStreak = 0; s.boxStreakTotal = 0;
       eco.save(u);
     }
   }
@@ -84,7 +101,7 @@ async function triggerDrop() {
   let description;
 
   if (type === 'pirate') {
-    code = codeGen(6, false);
+    code = pirateCode();
     image = PIRATE_GIF;
     title = '🏴‍☠️ PIRATE BOX DROP!';
     description =
@@ -160,32 +177,48 @@ async function handleMessage(message) {
   const type = activeDrop.type;
   const country = activeDrop.country;
 
-  // Streak logic: everyone else's chain breaks; winner's chain continues or starts.
+  const isFlag = type === 'flag';
+  const label = isFlag ? 'Flag' : 'Box';
+  const streakKey = isFlag ? 'flagStreak' : 'boxStreak';
+  const totalKey = isFlag ? 'flagStreakTotal' : 'boxStreakTotal';
+
+  // Separate flag and box streaks; a win resets the other kind for everyone.
   for (const id of db.allUsers()) {
     if (id === winner.id) continue;
     const u = eco.get(id);
-    if (u.stats.streak || u.stats.streakTotal) {
-      u.stats.streak = 0;
-      u.stats.streakTotal = 0;
+    const s = u.stats;
+    if (s.streak || s.streakTotal || s.flagStreak || s.flagStreakTotal || s.boxStreak || s.boxStreakTotal) {
+      s.streak = 0; s.streakTotal = 0;
+      s.flagStreak = 0; s.flagStreakTotal = 0;
+      s.boxStreak = 0; s.boxStreakTotal = 0;
       eco.save(u);
     }
   }
   const wu = eco.get(winner.id);
-  wu.stats.streak = (wu.stats.streak || 0) + 1;
-  wu.stats.streakTotal = (wu.stats.streakTotal || 0) + amount;
+  wu.stats[streakKey] = (wu.stats[streakKey] || 0) + 1;
+  wu.stats[totalKey] = (wu.stats[totalKey] || 0) + amount;
+  wu.stats[isFlag ? 'boxStreak' : 'flagStreak'] = 0;
+  wu.stats[isFlag ? 'boxStreakTotal' : 'flagStreakTotal'] = 0;
   wu.stats.dropsClaimed = (wu.stats.dropsClaimed || 0) + 1;
   eco.save(wu);
   eco.addCash(winner.id, amount, 'drop', `${type} drop claim`);
 
   const channel = await client.channels.fetch(activeDrop.channelId).catch(() => null);
   const oldMsg = channel ? await channel.messages.fetch(activeDrop.messageId).catch(() => null) : null;
-  if (type === 'pirate') {
+  const streakLine = `${label} streak: **${wu.stats[streakKey]}** in a row` +
+    (wu.stats[streakKey] >= config.streakRequired ? ` — use \`.streak ${isFlag ? 'flag' : 'box'}\` to cash in!` : '');
+  if (!isFlag) {
     await message.delete().catch(() => {});
     if (oldMsg) await oldMsg.delete().catch(() => {});
+    const embed = baseEmbed('✅ Claimed!',
+      `<@${winner.id}> claimed the code and won **${money(amount)}**!\n${streakLine}`,
+      0x23a55a
+    ).setImage(PIRATE_GIF);
+    const popup = await channel.send({ embeds: [embed] }).catch(() => null);
+    if (popup) setTimeout(() => popup.delete().catch(() => {}), 5000).unref();
   } else if (oldMsg) {
     const embed = baseEmbed('✅ Claimed!',
-      `<@${winner.id}> was first to type \`.${country.names[0]}\` and won **${money(amount)}**!\n` +
-      `Streak: **${wu.stats.streak}** in a row${wu.stats.streak >= config.streakRequired ? ' — use `.streak` to cash in!' : ''}`,
+      `<@${winner.id}> was first to type \`.${country.names[0]}\` and won **${money(amount)}**!\n${streakLine}`,
       0x23a55a
     ).setImage(flagImage(country));
     await oldMsg.edit({ embeds: [embed] }).catch(() => {});

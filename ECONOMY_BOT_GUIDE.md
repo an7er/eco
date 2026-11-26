@@ -127,9 +127,9 @@ OPENAI_API_KEY=optional
 - `.daily` — 24h cooldown, random **$3,500–$4,000**
 - `.work` — 1h cooldown, random **$800–$2,500**
 - `.shop`, `.buy`, `.inventory`, `.buyrole`, `.sell`
-- **Drop system:** one timer, random **1–3 min**, alternating:
-  - pirate box GIF + plain code, **$800–$3,500**
-  - flag + **8-character mixed case+number code**, **$500–$2,200**
+- **Drop system:** one timer, random **1–2 min**, alternating:
+  - pirate box GIF + **4-character mixed-case + digit code**, **$800–$3,500**
+  - flag image, no code (claim with `.<country name>`), **$500–$2,200**
   - **60s** to claim, first correct answer in general chat wins; unclaimed drop messages are deleted
   - bot mints the money
 
@@ -138,7 +138,7 @@ OPENAI_API_KEY=optional
 - `.crime` — risky payout, failure/jail
 - `.rob @user` — success roll, steals random **20%–77% of unbanked cash**; banked money safe; failure = fine/jail
 - `.quest`, `.streak`
-  - `.streak` = **5 consecutive first-to-claim drop wins**, then run `.streak` for **1.3% of total won across those 5 drops**; resets on someone else winning or a drop expiring; after payout resets to 0
+  - **Flag and box streaks are separate**: 5 consecutive wins of the same type, then `.streak flag` / `.streak box` pays **1.3% of those 5 wins' total**; a win of the other type breaks both; after payout resets to 0
 - `.coinflip`, `.gamble`, `.duel @user`, `.lottery`
 - `.deposit` / `.withdraw`, `.tax`
 

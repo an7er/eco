@@ -60,11 +60,11 @@ Dot prefix commands, e.g. `.daily`. Added to the user's existing bot. Database c
 - `.work` — 1h cooldown, random **$800–$2,500**
 
 ### Chat events
-- One shared timer, random **1–3 minutes**, **one event at a time**, alternating.
-- **Pirate box:** animated GIF (user's Pinterest GIF URL in `drops.js`), 6-char code. Claim with **`.CODE`** or plain `CODE`. Prize random **$800–$3,500**.
+- One shared timer, random **1–2 minutes**, **one event at a time**, alternating.
+- **Pirate box:** animated GIF (user's Pinterest GIF URL in `drops.js`), **4-char mixed-case + digit code**. Claim with **`.CODE`** or plain `CODE`. Prize random **$800–$3,500**. On claim: a "Claimed!" message appears for 5s, then the popup, claimer's message and drop message are deleted.
 - **Flag:** real country flag image (flagcdn), **no code**. Claim with **`.<country name>`** (or `.flag <name>`), e.g. `.france` or `.united states`. Prize random **$500–$2,200**.
 - **60s** to claim, then the unclaimed drop message is deleted. Bot mints the money.
-- `.streak`: 5 consecutive first-to-claim drop wins; breaks when anyone else wins or a drop expires. `.streak` pays **1.3% of total money won across those 5 drops**, then resets to 0.
+- **Separate flag and box streaks**: 5 consecutive wins of the same type; `.streak flag` / `.streak box` pays **1.3% of those 5 wins' total**, then resets. Winning the other type resets both; an expired drop resets all. Plain `.streak` shows both.
 
 ### Earners
 - `.beg`, `.fish` — 1h cooldown. Fishing uses sweet-spot timing buttons; rods improve catches.

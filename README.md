@@ -53,7 +53,7 @@ SQLite database is created automatically at `./data/economy.db`.
 
 **Core:** `.help` `.balance` `.daily` `.work` `.donate @user amt` `.leaderboard` `.leaderboard weekly` `.stats` `.history` `.wallet`
 
-**Earn:** `.beg` `.fish` `.mine` `.crime` `.rob @user` `.quest` `.streak` `.voice`
+**Earn:** `.beg` `.fish` `.mine` `.crime` `.rob @user` `.quest` `.streak flag|box` `.voice`
 
 **Gamble:** `.coinflip amt` `.gamble amt` `.duel @user amt` / `.duel` (accept) `.lottery buy` `.lottery draw` (admin)
 
@@ -73,9 +73,10 @@ SQLite database is created automatically at `./data/economy.db`.
 
 ## Notes
 
-- Drops run automatically every **1–3 minutes** in `GENERAL_CHANNEL_ID`, alternating pirate box / flag.
+- Drops run automatically every **1–2 minutes** in `GENERAL_CHANNEL_ID`, alternating pirate box / flag.
 - Only one drop is live at a time; each lasts **60s**. Unclaimed drop messages are deleted.
-- First to type the code wins; `.streak` pays **1.3% of 5-drop total** at 5 wins.
+- Pirate codes are **4 characters** (uppercase, lowercase, digits). First to type the code wins.
+- Flag and box streaks are separate; `.streak flag` / `.streak box` pays **1.3% of those 5 wins' total** at 5.
 - Banked money is safe from `.rob`.
 - Voice rewards: **$300 at 30 min**, **+$1,000 at 1 hour** per session.
 - Phase 6 (Discord Activity 2D game) is intentionally **not included** — parked for later.

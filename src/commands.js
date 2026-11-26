@@ -28,7 +28,7 @@ const commands = {};
 commands.help = async (msg) => {
   const e = baseEmbed('📖 Economy Bot Commands',
     `**Core:** \`.balance\` \`.daily\` \`.work\` \`.donate @user amt\` \`.leaderboard\` \`.stats\` \`.history\`\n` +
-    `**Earn:** \`.beg\` \`.fish\` \`.mine\` \`.crime\` \`.rob @user\` \`.quest\` \`.streak\` \`.voice\`\n` +
+    `**Earn:** \`.beg\` \`.fish\` \`.mine\` \`.crime\` \`.rob @user\` \`.quest\` \`.streak flag|box\` \`.voice\`\n` +
     `**Gamble:** \`.coinflip amt\` \`.gamble amt\` \`.duel @user amt\` \`.lottery buy|draw\`\n` +
     `**Bank:** \`.deposit amt|all\` \`.withdraw amt\` \`.tax %\` (admin)\n` +
     `**Shop:** \`.shop\` \`.buy name\` \`.sell mat amt\` \`.sellall\` \`.inventory\` \`.buyrole @role\`\n` +
@@ -168,7 +168,7 @@ commands.crime = async (msg) => {
     const amt = randInt(config.crimeMin, config.crimeMax);
     u.cash += amt; u.stats.earned += amt;
     text = `🦹 Your crime succeeded! You got **${money(amt)}**.`;
-    eco.addTransaction(msg.author.id, 'crime', amt, 'success');
+    db.addTransaction(msg.author.id, 'crime', amt, 'success');
   } else {
     const fine = randInt(config.crimeFailMin, config.crimeFailMax);
     if (eco.hasInsurance(u)) {
@@ -212,8 +212,8 @@ commands.rob = async (msg, args) => {
   if (amt <= 0) return replies.err(msg, 'Nothing to steal.');
   target.cash -= amt; eco.save(target);
   u.cash += amt; u.stats.robWins++; eco.save(u);
-  eco.addTransaction(id, 'robbed', -amt, `robbed by ${msg.author.id}`);
-  eco.addTransaction(msg.author.id, 'rob', amt, `robbed ${id}`);
+  db.addTransaction(id, 'robbed', -amt, `robbed by ${msg.author.id}`);
+  db.addTransaction(msg.author.id, 'rob', amt, `robbed ${id}`);
   replies.ok(msg, `🦹 Robbery successful! You stole **${money(amt)}** (${pct}%) from <@${id}>'s unbanked cash!`);
 };
 
@@ -231,18 +231,34 @@ commands.quest = async (msg) => {
   replies.ok(msg, `📋 Daily quest: Mine 5 times today. Progress: **${progress}/5**`);
 };
 
-commands.streak = async (msg) => {
-  const u = eco.get(msg.author.id);
-  const s = u.stats.streak || 0;
-  if (s < config.streakRequired) {
-    return replies.ok(msg, `🔥 Drop streak: **${s}/${config.streakRequired}**. Be first to claim drops to build it!`);
+commands.streak = async (msg, args) => {
+  const kind = (args[0] || '').toLowerCase();
+  if (kind && !['flag', 'box', 'loot'].includes(kind)) {
+    return replies.err(msg, 'Usage: `.streak` / `.streak flag` / `.streak box`');
   }
-  const bonus = Math.floor(u.stats.streakTotal * config.streakBonusPct / 100);
+  const u = eco.get(msg.author.id);
+  const line = (label, key, totalKey) =>
+    `**${label}:** ${u.stats[key] || 0}/${config.streakRequired} (won ${money(u.stats[totalKey] || 0)})`;
+  if (!kind) {
+    return replies.ok(msg,
+      `🔥 ${line('Flag', 'flagStreak', 'flagStreakTotal')}\n` +
+      `🔥 ${line('Box', 'boxStreak', 'boxStreakTotal')}\n` +
+      `Cash in at 5 with \`.streak flag\` or \`.streak box\`.`);
+  }
+  const isFlag = kind === 'flag';
+  const label = isFlag ? 'Flag' : 'Box';
+  const streakKey = isFlag ? 'flagStreak' : 'boxStreak';
+  const totalKey = isFlag ? 'flagStreakTotal' : 'boxStreakTotal';
+  const s = u.stats[streakKey] || 0;
+  if (s < config.streakRequired) {
+    return replies.ok(msg, `🔥 ${label} streak: **${s}/${config.streakRequired}**. Be first to claim ${isFlag ? 'flag' : 'box'} drops to build it!`);
+  }
+  const bonus = Math.floor((u.stats[totalKey] || 0) * config.streakBonusPct / 100);
   u.cash += bonus; u.stats.earned += bonus;
-  u.stats.streak = 0; u.stats.streakTotal = 0;
+  u.stats[streakKey] = 0; u.stats[totalKey] = 0;
   eco.save(u);
-  eco.addTransaction(msg.author.id, 'streak', bonus, 'streak bonus');
-  replies.ok(msg, `🔥 Streak bonus paid: **${money(bonus)}** (1.3% of your 5-drop winnings). Streak reset!`);
+  db.addTransaction(msg.author.id, 'streak', bonus, `${label.toLowerCase()} streak bonus`);
+  replies.ok(msg, `🔥 ${label} streak bonus paid: **${money(bonus)}** (1.3% of your 5-drop total). Streak reset!`);
 };
 
 commands.coinflip = async (msg, args) => {
@@ -389,7 +405,7 @@ commands.sell = async (msg, args) => {
   u.inventory.materials[mat] -= amt;
   const total = value * amt;
   u.cash += total; u.stats.earned += total;
-  eco.save(u); eco.addTransaction(msg.author.id, 'sell', total, `${amt} ${mat}`);
+  eco.save(u); db.addTransaction(msg.author.id, 'sell', total, `${amt} ${mat}`);
   replies.ok(msg, `💰 Sold ${amt} ${mat} for **${money(total)}**.`);
 };
 
@@ -547,7 +563,7 @@ commands.stats = async (msg) => {
     `**Earned:** ${money(u.stats.earned)}\n**Spent:** ${money(u.stats.spent)}\n` +
     `**Won:** ${money(u.stats.won)}\n**Drops claimed:** ${u.stats.dropsClaimed}\n` +
     `**Rob wins:** ${u.stats.robWins}\n**Dungeon wins:** ${u.stats.dungeonWins}\n` +
-    `**Drop streak:** ${u.stats.streak}`,
+    `**Flag streak:** ${u.stats.flagStreak || 0}\n**Box streak:** ${u.stats.boxStreak || 0}`,
     0x5865f2));
 };
 
