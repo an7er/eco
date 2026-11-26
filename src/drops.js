@@ -179,15 +179,15 @@ async function handleMessage(message) {
 
   const channel = await client.channels.fetch(activeDrop.channelId).catch(() => null);
   const oldMsg = channel ? await channel.messages.fetch(activeDrop.messageId).catch(() => null) : null;
-  if (oldMsg) {
-    const how = type === 'flag'
-      ? `was first to type \`.${country.names[0]}\``
-      : 'was first to type the code';
+  if (type === 'pirate') {
+    await message.delete().catch(() => {});
+    if (oldMsg) await oldMsg.delete().catch(() => {});
+  } else if (oldMsg) {
     const embed = baseEmbed('✅ Claimed!',
-      `<@${winner.id}> ${how} and won **${money(amount)}**!\n` +
+      `<@${winner.id}> was first to type \`.${country.names[0]}\` and won **${money(amount)}**!\n` +
       `Streak: **${wu.stats.streak}** in a row${wu.stats.streak >= config.streakRequired ? ' — use `.streak` to cash in!' : ''}`,
       0x23a55a
-    ).setImage(type === 'flag' ? flagImage(country) : PIRATE_GIF);
+    ).setImage(flagImage(country));
     await oldMsg.edit({ embeds: [embed] }).catch(() => {});
   }
 
