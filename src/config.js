@@ -28,7 +28,7 @@ module.exports = {
   // Drops
   dropMinDelay: 1 * minute,
   dropMaxDelay: 10 * minute,
-  dropClaimMs: 90 * 1000,
+  dropClaimMs: 60 * 1000,
   pirateMin: 800, pirateMax: 3500,
   flagMin: 500, flagMax: 2200,
   streakRequired: 5,

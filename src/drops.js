@@ -6,9 +6,9 @@ const { randInt, codeGen, pick, baseEmbed, money } = require('./utils');
 // Replace this with any pirate GIF/image URL you like.
 const PIRATE_GIF = 'https://i.pinimg.com/originals/88/1a/98/881a988f92d5a2d602e881f8d4f699f7.gif';
 
-// Random countries for the flag event. Players type .flag <full country name>.
+// Random countries for the flag event. Players type .<country name> (or .flag <name>).
 const COUNTRIES = [
-  { code: 'us', flag: '🇺🇸', names: ['united states', 'usa', 'us', 'america'] },
+  { code: 'us', flag: '🇺🇸', names: ['united states', 'united state', 'united states of america', 'usa', 'us', 'america'] },
   { code: 'gb', flag: '🇬🇧', names: ['united kingdom', 'uk', 'britain', 'england'] },
   { code: 'fr', flag: '🇫🇷', names: ['france'] },
   { code: 'de', flag: '🇩🇪', names: ['germany'] },
@@ -24,7 +24,7 @@ const COUNTRIES = [
   { code: 'mx', flag: '🇲🇽', names: ['mexico'] },
   { code: 'ru', flag: '🇷🇺', names: ['russia'] },
   { code: 'za', flag: '🇿🇦', names: ['south africa'] },
-  { code: 'sw', flag: '🇸🇪', names: ['sweden'] },
+  { code: 'se', flag: '🇸🇪', names: ['sweden'] },
   { code: 'th', flag: '🇹🇭', names: ['thailand'] },
   { code: 'tr', flag: '🇹🇷', names: ['turkey'] },
   { code: 'ng', flag: '🇳🇬', names: ['nigeria'] }
@@ -90,16 +90,16 @@ async function triggerDrop() {
     description =
       `A pirate box appeared!\n**Prize inside:** ???\n\n` +
       `**Code:** \`${code}\`\nType \`.${code}\` (or just the code) first to claim!\n\n` +
-      `⏱️ You have **1 minute 30 seconds**.`;
+      `⏱️ You have **${config.dropClaimMs / 1000} seconds**.`;
   } else {
     country = pick(COUNTRIES);
     image = flagImage(country);
     title = '🚩 FLAG DROP!';
     description =
       `${country.flag} A flag appeared!\n**Prize inside:** ???\n\n` +
-      `First to type \`.flag <country name>\` wins the money!\n` +
-      `Example: for the USA flag, type \`.flag united states\`\n\n` +
-      `⏱️ You have **1 minute 30 seconds**.`;
+      `First to type \`.<country name>\` wins the money!\n` +
+      `Example: for the USA flag, type \`.united states\` (or \`.united state\`)\n\n` +
+      `⏱️ You have **${config.dropClaimMs / 1000} seconds**.`;
   }
 
   const embed = baseEmbed(title, description, 0xf0b232).setImage(image);
@@ -125,13 +125,8 @@ async function expireDrop(msg) {
   if (!activeDrop || activeDrop.claimed) return;
   activeDrop.claimed = true;
   resetAllStreaks();
-  const isPirate = activeDrop.type === 'pirate';
-  const embed = baseEmbed('⌛ Drop Expired',
-    `Nobody claimed the ${isPirate ? 'pirate box' : 'flag'} in time — it vanished!\n` +
-    `The next drop will appear soon.`,
-    0x747f8d
-  ).setImage(isPirate ? PIRATE_GIF : flagImage(activeDrop.country));
-  await msg.edit({ embeds: [embed] }).catch(() => {});
+  console.log(`[drops] ${activeDrop.type} drop expired unclaimed — deleting message`);
+  await msg.delete().catch(e => console.error('[drops] Failed to delete expired drop:', e.message));
   activeDrop = null;
   scheduleNext();
 }
@@ -144,10 +139,12 @@ async function handleMessage(message) {
   const typed = message.content.trim().toLowerCase();
 
   if (activeDrop.type === 'flag') {
-    // Claim format: .flag united states
-    const prefix = config.prefix + 'flag ';
-    if (!typed.startsWith(prefix)) return false;
-    const name = typed.slice(prefix.length).trim();
+    // Claim with .<country name> or .flag <country name>.
+    const flagPrefix = config.prefix + 'flag ';
+    let name;
+    if (typed.startsWith(flagPrefix)) name = typed.slice(flagPrefix.length).trim();
+    else if (typed.startsWith(config.prefix)) name = typed.slice(config.prefix.length).trim();
+    else return false;
     if (!activeDrop.country.names.includes(name)) return false;
   } else {
     // Pirate box: accept ".CODE" or plain "CODE".
@@ -184,7 +181,7 @@ async function handleMessage(message) {
   const oldMsg = channel ? await channel.messages.fetch(activeDrop.messageId).catch(() => null) : null;
   if (oldMsg) {
     const how = type === 'flag'
-      ? `was first to type \`.flag ${country.names[0]}\``
+      ? `was first to type \`.${country.names[0]}\``
       : 'was first to type the code';
     const embed = baseEmbed('✅ Claimed!',
       `<@${winner.id}> ${how} and won **${money(amount)}**!\n` +

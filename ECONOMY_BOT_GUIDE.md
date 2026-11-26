@@ -130,7 +130,7 @@ OPENAI_API_KEY=optional
 - **Drop system:** one timer, random **1–10 min**, alternating:
   - pirate box GIF + plain code, **$800–$3,500**
   - flag + **8-character mixed case+number code**, **$500–$2,200**
-  - **1m30s** to claim, first exact code in general chat wins, then vanishes
+  - **60s** to claim, first correct answer in general chat wins; unclaimed drop messages are deleted
   - bot mints the money
 
 ### Phase 2 — Earners & risk

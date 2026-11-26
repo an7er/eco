@@ -30,7 +30,7 @@ src/config.js         all agreed values
 src/db.js             SQLite schema + seeded shop
 src/economy.js        cash/bank/transfer/tax/cooldowns/transactions
 src/gear.js           axes, rods, swords, durability, repair, combine, upgrades, enchants, loot boxes
-src/drops.js          pirate box + flag events, .CODE and .flag <country> claims, debug logs
+src/drops.js          pirate box + flag events, .CODE and .<country> claims, debug logs
 src/minigames.js      sweet-spot timing buttons for .fish/.mine
 src/dungeons.js       solo + team boss fights with role abilities
 src/commands.js       all commands
@@ -62,8 +62,8 @@ Dot prefix commands, e.g. `.daily`. Added to the user's existing bot. Database c
 ### Chat events
 - One shared timer, random **1–10 minutes**, **one event at a time**, alternating.
 - **Pirate box:** animated GIF (user's Pinterest GIF URL in `drops.js`), 6-char code. Claim with **`.CODE`** or plain `CODE`. Prize random **$800–$3,500**.
-- **Flag:** real country flag image (flagcdn), **no code**. Claim with **`.flag <full country name>`**, e.g. `.flag united states`. Prize random **$500–$2,200**.
-- **1m30s** to claim, then it vanishes. Bot mints the money.
+- **Flag:** real country flag image (flagcdn), **no code**. Claim with **`.<country name>`** (or `.flag <name>`), e.g. `.france` or `.united states`. Prize random **$500–$2,200**.
+- **60s** to claim, then the unclaimed drop message is deleted. Bot mints the money.
 - `.streak`: 5 consecutive first-to-claim drop wins; breaks when anyone else wins or a drop expires. `.streak` pays **1.3% of total money won across those 5 drops**, then resets to 0.
 
 ### Earners
