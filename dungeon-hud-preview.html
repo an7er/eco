@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dungeon HUD Preview — Animated Moves</title>
+<style>
+  :root{
+    --bg:#313338; --embed:#232428; --text:#dbdee1; --muted:#949ba4;
+    --blurple:#5865f2; --green:#23a55a; --red:#f23f43; --gold:#f0b232;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding:24px 12px;display:flex;justify-content:center}
+  .chat{width:100%;max-width:720px}
+  .msg{display:flex;gap:12px;margin-bottom:16px}
+  .avatar{flex:0 0 40px;height:40px;border-radius:50%;
+    background:linear-gradient(135deg,#5865f2,#8d5ef2);
+    display:flex;align-items:center;justify-content:center;font-size:20px}
+  .body{flex:1;min-width:0}
+  .head{display:flex;align-items:baseline;gap:8px;margin-bottom:4px}
+  .name{font-weight:600;color:#f2f3f5}
+  .bot{font-size:10px;background:var(--blurple);color:#fff;padding:1px 4px;border-radius:3px}
+  .time{font-size:11px;color:var(--muted)}
+  .embed{background:var(--embed);border-radius:6px;padding:14px 16px;
+    border-left:4px solid var(--gold);max-width:640px}
+  .title{font-weight:700;font-size:16px;color:#f2f3f5;margin-bottom:2px}
+  .sub{font-size:13px;color:var(--muted);margin-bottom:10px}
+
+  .stage{position:relative;display:flex;align-items:center;justify-content:space-between;
+    background:linear-gradient(180deg,#2d3036,#25272c);
+    border:1px solid #3a3c41;border-radius:6px;padding:12px 18px;margin-bottom:12px;
+    height:96px;overflow:hidden}
+  .fighter{position:relative;font-size:36px;line-height:1;z-index:2}
+  .fighter small{display:block;font-size:11px;color:var(--muted);text-align:center;margin-top:2px}
+  .vs{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:2px}
+  .orb{position:absolute;top:38px;font-size:20px;opacity:0;z-index:3}
+  .popup{position:absolute;top:26px;font-weight:800;font-size:17px;opacity:0;z-index:4;
+    text-shadow:0 2px 4px #000}
+  .playerPop{left:54px}.enemyPop{right:54px}
+
+  .row{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:13px;flex-wrap:wrap}
+  .label{width:38px;color:var(--muted);font-size:12px;font-weight:600}
+  .bar{position:relative;flex:1;min-width:120px;height:12px;border-radius:6px;
+    background:#111214;overflow:hidden;border:1px solid #3a3c41}
+  .fill{height:100%;border-radius:6px;transition:width .45s ease}
+  .hp{background:linear-gradient(90deg,#23a55a,#3ddc84)}
+  .mp{background:linear-gradient(90deg,#5865f2,#8aa2ff)}
+  .xp{background:linear-gradient(90deg,#f0b232,#ffd166)}
+  .ehp{background:linear-gradient(90deg,#f23f43,#ff6b6b)}
+  .val{width:64px;text-align:right;font-variant-numeric:tabular-nums;font-size:12px}
+  .divider{height:1px;background:#3a3c41;margin:12px 0}
+  .enemy{font-weight:700;color:#ff8b8b;font-size:14px;margin-bottom:2px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .chip{font-size:11px;background:#3a3c41;padding:3px 8px;border-radius:10px}
+  .field{margin-top:10px;font-size:13px}.field b{color:#f2f3f5}
+  .log{font-size:12px;color:#b5bac1;margin-top:10px;line-height:1.5}
+  .buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  button{border:0;border-radius:4px;padding:8px 12px;font-size:13px;font-weight:600;
+    color:#fff;cursor:pointer;font-family:inherit}
+  .b-atk{background:var(--red)}.b-mag{background:var(--blurple)}
+  .b-heal{background:var(--green)}.b-item{background:#4e5058}.b-flee{background:#747f8d}
+  button:hover{filter:brightness(1.15)}
+  .hint{font-size:11px;color:var(--muted);margin-top:8px}
+  .note{max-width:640px;margin-top:18px;font-size:12px;color:var(--muted);
+    border-top:1px solid #3a3c41;padding-top:12px}
+
+  @keyframes lunge{0%{transform:translateX(0)}45%{transform:translateX(30px)}100%{transform:translateX(0)}}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+  @keyframes pop{0%{opacity:0;transform:translateY(0) scale(.6)}
+    30%{opacity:1;transform:translateY(-12px) scale(1.2)}
+    100%{opacity:0;transform:translateY(-44px) scale(1)}}
+  @keyframes fly{0%{left:52px;opacity:0}20%{opacity:1}100%{left:82%;opacity:0}}
+  @keyframes pulse{0%{text-shadow:0 0 0 #3ddc84}50%{text-shadow:0 0 18px #3ddc84}100%{text-shadow:0 0 0 #3ddc84}}
+  @keyframes flee{0%{opacity:1;transform:translateX(0)}100%{opacity:0;transform:translateX(60px)}}
+  .anim-lunge{animation:lunge .45s ease}
+  .anim-shake{animation:shake .45s ease}
+  .anim-pop{animation:pop 1s ease forwards}
+  .anim-fly{animation:fly .5s ease forwards}
+  .anim-pulse{animation:pulse .8s ease}
+  .anim-flee{animation:flee .6s ease forwards}
+  @media(max-width:520px){.embed{padding:12px}.label{width:30px}.val{width:54px}.stage{height:84px}}
+</style>
+</head>
+<body>
+<div class="chat">
+  <div class="msg">
+    <div class="avatar">⚔️</div>
+    <div class="body">
+      <div class="head"><span class="name">EconomyBot</span><span class="bot">BOT</span><span class="time">Today at 21:04</span></div>
+      <div class="embed">
+        <div class="title">⚔️ DUNGEON — Floor 3</div>
+        <div class="sub">Lv 12 Mage · Sword: Iron Spellblade +3 · Party: 3/5</div>
+
+        <div class="stage" id="stage">
+          <div class="fighter anim-pulse" id="player">🧙<small>You</small></div>
+          <div class="vs">VS</div>
+          <div class="fighter" id="enemy">👹<small>Forest Beast</small></div>
+          <div class="orb" id="orb">✨</div>
+          <div class="popup playerPop" id="playerPop"></div>
+          <div class="popup enemyPop" id="enemyPop"></div>
+        </div>
+
+        <div class="row"><span class="label">HP</span><div class="bar"><div class="fill hp" id="php" style="width:80%"></div></div><span class="val" id="phpv">80/100</span></div>
+        <div class="row"><span class="label">MP</span><div class="bar"><div class="fill mp" id="pmp" style="width:50%"></div></div><span class="val" id="pmpv">50/100</span></div>
+        <div class="row"><span class="label">XP</span><div class="bar"><div class="fill xp" style="width:31%"></div></div><span class="val">31%</span></div>
+
+        <div class="divider"></div>
+        <div class="enemy">👹 Forest Beast</div>
+        <div class="row"><span class="label">HP</span><div class="bar"><div class="fill ehp" id="ehp" style="width:45%"></div></div><span class="val" id="ehpv">45/100</span></div>
+        <div class="chips"><span class="chip">🔥 Burn · 2 turns</span><span class="chip">☠️ Poison · 1 turn</span></div>
+
+        <div class="field">🎒 <b>Inventory:</b> Iron Axe +1 · 4x Iron · Potion x2 · Loot Box x1</div>
+        <div class="log" id="log">📜 <b>Combat log:</b> Waiting for your move…</div>
+        <div class="hint">👆 Click a button to preview the character's move animation.</div>
+
+        <div class="buttons">
+          <button class="b-atk" onclick="move('attack')">⚔️ Attack</button>
+          <button class="b-mag" onclick="move('magic')">✨ Magic</button>
+          <button class="b-heal" onclick="move('heal')">💚 Heal</button>
+          <button class="b-item" onclick="move('item')">🎒 Item</button>
+          <button class="b-flee" onclick="move('flee')">🏃 Flee</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    Visual preview only — a static mockup with CSS animations to show how moves would appear.
+    In the real bot these would be simulated with changing icons / short GIFs and an updated combat log inside one Discord embed.
+    No bot code, no server connection, nothing built.
+  </div>
+</div>
+
+<script>
+let php=80, pmp=50, ehp=45;
+const $=id=>document.getElementById(id);
+function animate(el,cls,ms){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls);setTimeout(()=>el.classList.remove(cls),ms);}
+function popup(id,text,color){
+  const p=$(id); p.textContent=text; p.style.color=color; animate(p,'anim-pop',1000);
+}
+function update(){
+  $('php').style.width=php+'%'; $('phpv').textContent=php+'/100';
+  $('pmp').style.width=pmp+'%'; $('pmpv').textContent=pmp+'/100';
+  $('ehp').style.width=Math.max(0,ehp)+'%'; $('ehpv').textContent=Math.max(0,ehp)+'/100';
+}
+function log(t){$('log').innerHTML='📜 <b>Combat log:</b> '+t;}
+function move(type){
+  const player=$('player'), enemy=$('enemy'), orb=$('orb');
+  if(type==='attack'){
+    animate(player,'anim-lunge',450); animate(enemy,'anim-shake',450);
+    const d=22+Math.floor(Math.random()*7); ehp=Math.max(0,ehp-d);
+    popup('enemyPop','-'+d,'#ff6b6b'); log('You slashed the beast for <b>'+d+'</b> damage!');
+  } else if(type==='magic'){
+    if(pmp<10){log('Not enough MP for Magic Burst!');return;}
+    pmp-=10; animate(orb,'anim-fly',500); animate(enemy,'anim-shake',450);
+    const d=30+Math.floor(Math.random()*7); ehp=Math.max(0,ehp-d);
+    setTimeout(()=>popup('enemyPop','-'+d,'#c9b6ff'),320);
+    log('✨ <b>Magic Burst</b> hit for <b>'+d+'</b> damage! (-10 MP)');
+  } else if(type==='heal'){
+    animate(player,'anim-pulse',800);
+    const h=15+Math.floor(Math.random()*6); php=Math.min(100,php+h);
+    popup('playerPop','+'+h,'#3ddc84'); log('💚 You healed <b>'+h+'</b> HP!');
+  } else if(type==='item'){
+    animate(player,'anim-pulse',800); const h=20; php=Math.min(100,php+h);
+    popup('playerPop','+'+h,'#3ddc84'); log('🧪 You used a Potion and restored <b>'+h+'</b> HP!');
+  } else if(type==='flee'){
+    animate(player,'anim-flee',600); log('🏃 You fled from the dungeon!');
+    setTimeout(()=>{player.style.opacity='1';player.style.transform='none';},650);
+  }
+  update();
+}
+update();
+</script>
+</body>
+</html>
