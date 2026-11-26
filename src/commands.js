@@ -30,7 +30,7 @@ commands.help = async (msg) => {
     `**Core:** \`.balance\` \`.daily\` \`.work\` \`.donate @user amt\` \`.leaderboard\` \`.stats\` \`.history\`\n` +
     `**Earn:** \`.beg\` \`.fish\` \`.mine\` \`.crime\` \`.rob @user\` \`.quest\` \`.streak\` \`.voice\`\n` +
     `**Gamble:** \`.coinflip amt\` \`.gamble amt\` \`.duel @user amt\` \`.lottery buy|draw\`\n` +
-    `**Bank:** \`.deposit amt\` \`.withdraw amt\` \`.tax %\` (admin)\n` +
+    `**Bank:** \`.deposit amt|all\` \`.withdraw amt\` \`.tax %\` (admin)\n` +
     `**Shop:** \`.shop\` \`.buy name\` \`.sell mat amt\` \`.sellall\` \`.inventory\` \`.buyrole @role\`\n` +
     `**Gear:** \`.equip axe|rod|sword #\` \`.repair #\` \`.combine # #\` \`.upgrade axe|rod|sword #\` \`.enchant kind # #\` \`.open\`\n` +
     `**Passive:** \`.collect\` \`.title text\` \`.nickname text\` \`.gift @user amt\`\n` +
@@ -324,8 +324,11 @@ commands.lottery = async (msg, args) => {
 };
 
 commands.deposit = async (msg, args) => {
-  const amt = parseInt(args[0]);
-  if (!amt || amt <= 0) return replies.err(msg, 'Usage: `.deposit amount`');
+  const raw = (args[0] || '').toLowerCase();
+  const u = eco.get(msg.author.id);
+  if (raw === 'all' && u.cash <= 0) return replies.err(msg, 'You have no cash to deposit.');
+  const amt = raw === 'all' ? u.cash : parseInt(raw);
+  if (!amt || amt <= 0) return replies.err(msg, 'Usage: `.deposit amount|all`');
   if (!eco.deposit(msg.author.id, amt)) return replies.err(msg, 'Not enough cash.');
   replies.ok(msg, `🏦 Deposited **${money(amt)}** into your bank.`);
 };

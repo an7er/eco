@@ -3,7 +3,7 @@ const { EmbedBuilder } = require('discord.js');
 const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
-const money = n => '$' + Math.round(n).toLocaleString('en-US');
+const money = n => Math.round(n) + '$';
 
 function codeGen(length, mixed) {
   const lower = 'abcdefghijkmnopqrstuvwxyz';

@@ -57,7 +57,7 @@ SQLite database is created automatically at `./data/economy.db`.
 
 **Gamble:** `.coinflip amt` `.gamble amt` `.duel @user amt` / `.duel` (accept) `.lottery buy` `.lottery draw` (admin)
 
-**Bank:** `.deposit amt` `.withdraw amt` `.tax %` (admin)
+**Bank:** `.deposit amt|all` `.withdraw amt` `.tax %` (admin)
 
 **Shop:** `.shop` `.buy name` `.sell material amt` `.sellall` `.inventory` `.buyrole @role` `.open`
 
