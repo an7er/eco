@@ -207,22 +207,17 @@ async function handleMessage(message) {
   const oldMsg = channel ? await channel.messages.fetch(activeDrop.messageId).catch(() => null) : null;
   const streakLine = `${label} streak: **${wu.stats[streakKey]}** in a row` +
     (wu.stats[streakKey] >= config.streakRequired ? ` — use \`.streak ${isFlag ? 'flag' : 'box'}\` to cash in!` : '');
-  if (!isFlag) {
-    await message.delete().catch(() => {});
-    if (oldMsg) await oldMsg.delete().catch(() => {});
-    const embed = baseEmbed('✅ Claimed!',
-      `<@${winner.id}> claimed the code and won **${money(amount)}**!\n${streakLine}`,
-      0x23a55a
-    ).setImage(PIRATE_GIF);
-    const popup = await channel.send({ embeds: [embed] }).catch(() => null);
-    if (popup) setTimeout(() => popup.delete().catch(() => {}), 5000).unref();
-  } else if (oldMsg) {
-    const embed = baseEmbed('✅ Claimed!',
-      `<@${winner.id}> was first to type \`.${country.names[0]}\` and won **${money(amount)}**!\n${streakLine}`,
-      0x23a55a
-    ).setImage(flagImage(country));
-    await oldMsg.edit({ embeds: [embed] }).catch(() => {});
-  }
+  await message.delete().catch(() => {});
+  if (oldMsg) await oldMsg.delete().catch(() => {});
+  const how = isFlag
+    ? `was first to type \`.${country.names[0]}\``
+    : 'claimed the code';
+  const embed = baseEmbed('✅ Claimed!',
+    `<@${winner.id}> ${how} and won **${money(amount)}**!\n${streakLine}`,
+    0x23a55a
+  ).setImage(isFlag ? flagImage(country) : PIRATE_GIF);
+  const popup = channel ? await channel.send({ embeds: [embed] }).catch(() => null) : null;
+  if (popup) setTimeout(() => popup.delete().catch(() => {}), 5000).unref();
 
   activeDrop = null;
   scheduleNext();
