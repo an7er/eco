@@ -89,7 +89,7 @@ async function triggerDrop() {
     title = '🏴‍☠️ PIRATE BOX DROP!';
     description =
       `A pirate box appeared!\n**Prize inside:** ???\n\n` +
-      `**Code:** \`${code}\`\nType \`.${code}\` (or just the code) first to claim!\n\n` +
+      `**Code:** \`${code}\`\n**First to claim!**\n\n` +
       `⏱️ You have **${config.dropClaimMs / 1000} seconds**.`;
   } else {
     country = pick(COUNTRIES);
