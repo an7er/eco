@@ -76,6 +76,7 @@ SQLite database is created automatically at `./data/economy.db`.
 - Drops run automatically every **1–2 minutes** in `GENERAL_CHANNEL_ID`, alternating pirate box / flag.
 - Only one drop is live at a time; each lasts **60s**. Unclaimed drop messages are deleted.
 - Pirate codes are **4 characters** (uppercase, lowercase, digits). First to type the code wins.
+- Flag names work in **English or Arabic** (e.g. `.france` / `.فرنسا`).
 - Flag and box streaks are separate; `.streak flag` / `.streak box` pays **1.3% of those 5 wins' total** at 5.
 - Banked money is safe from `.rob`.
 - Voice rewards: **$300 at 30 min**, **+$1,000 at 1 hour** per session.

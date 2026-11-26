@@ -6,28 +6,28 @@ const { randInt, pick, baseEmbed, money } = require('./utils');
 // Replace this with any pirate GIF/image URL you like.
 const PIRATE_GIF = 'https://i.pinimg.com/originals/88/1a/98/881a988f92d5a2d602e881f8d4f699f7.gif';
 
-// Random countries for the flag event. Players type .<country name> (or .flag <name>).
+// Random countries for the flag event. Players type .<country name> in English or Arabic (or .flag <name>).
 const COUNTRIES = [
-  { code: 'us', flag: '🇺🇸', names: ['united states', 'united state', 'united states of america', 'usa', 'us', 'america'] },
-  { code: 'gb', flag: '🇬🇧', names: ['united kingdom', 'uk', 'britain', 'england'] },
-  { code: 'fr', flag: '🇫🇷', names: ['france'] },
-  { code: 'de', flag: '🇩🇪', names: ['germany'] },
-  { code: 'it', flag: '🇮🇹', names: ['italy'] },
-  { code: 'es', flag: '🇪🇸', names: ['spain'] },
-  { code: 'jp', flag: '🇯🇵', names: ['japan'] },
-  { code: 'kr', flag: '🇰🇷', names: ['south korea', 'korea'] },
-  { code: 'cn', flag: '🇨🇳', names: ['china'] },
-  { code: 'in', flag: '🇮🇳', names: ['india'] },
-  { code: 'br', flag: '🇧🇷', names: ['brazil'] },
-  { code: 'ca', flag: '🇨🇦', names: ['canada'] },
-  { code: 'au', flag: '🇦🇺', names: ['australia'] },
-  { code: 'mx', flag: '🇲🇽', names: ['mexico'] },
-  { code: 'ru', flag: '🇷🇺', names: ['russia'] },
-  { code: 'za', flag: '🇿🇦', names: ['south africa'] },
-  { code: 'se', flag: '🇸🇪', names: ['sweden'] },
-  { code: 'th', flag: '🇹🇭', names: ['thailand'] },
-  { code: 'tr', flag: '🇹🇷', names: ['turkey'] },
-  { code: 'ng', flag: '🇳🇬', names: ['nigeria'] }
+  { code: 'us', flag: '🇺🇸', names: ['united states', 'united state', 'united states of america', 'usa', 'us', 'america', 'أمريكا', 'امريكا', 'الولايات المتحدة', 'الولايات المتحده'] },
+  { code: 'gb', flag: '🇬🇧', names: ['united kingdom', 'uk', 'britain', 'england', 'بريطانيا', 'المملكة المتحدة', 'انجلترا', 'إنجلترا'] },
+  { code: 'fr', flag: '🇫🇷', names: ['france', 'فرنسا'] },
+  { code: 'de', flag: '🇩🇪', names: ['germany', 'ألمانيا', 'المانيا'] },
+  { code: 'it', flag: '🇮🇹', names: ['italy', 'إيطاليا', 'ايطاليا'] },
+  { code: 'es', flag: '🇪🇸', names: ['spain', 'إسبانيا', 'اسبانيا'] },
+  { code: 'jp', flag: '🇯🇵', names: ['japan', 'اليابان'] },
+  { code: 'kr', flag: '🇰🇷', names: ['south korea', 'korea', 'كوريا الجنوبية', 'كوريا'] },
+  { code: 'cn', flag: '🇨🇳', names: ['china', 'الصين'] },
+  { code: 'in', flag: '🇮🇳', names: ['india', 'الهند'] },
+  { code: 'br', flag: '🇧🇷', names: ['brazil', 'البرازيل'] },
+  { code: 'ca', flag: '🇨🇦', names: ['canada', 'كندا'] },
+  { code: 'au', flag: '🇦🇺', names: ['australia', 'أستراليا', 'استراليا'] },
+  { code: 'mx', flag: '🇲🇽', names: ['mexico', 'المكسيك'] },
+  { code: 'ru', flag: '🇷🇺', names: ['russia', 'روسيا'] },
+  { code: 'za', flag: '🇿🇦', names: ['south africa', 'جنوب أفريقيا', 'جنوب افريقيا'] },
+  { code: 'se', flag: '🇸🇪', names: ['sweden', 'السويد'] },
+  { code: 'th', flag: '🇹🇭', names: ['thailand', 'تايلاند'] },
+  { code: 'tr', flag: '🇹🇷', names: ['turkey', 'تركيا'] },
+  { code: 'ng', flag: '🇳🇬', names: ['nigeria', 'نيجيريا'] }
 ];
 
 const flagImage = c => `https://flagcdn.com/w320/${c.code}.png`;
@@ -115,7 +115,7 @@ async function triggerDrop() {
     description =
       `${country.flag} A flag appeared!\n**Prize inside:** ???\n\n` +
       `First to type \`.<country name>\` wins the money!\n` +
-      `Example: for the USA flag, type \`.united states\` (or \`.united state\`)\n\n` +
+      `English or Arabic names both work: \`.france\` / \`.فرنسا\`, \`.united states\` / \`.أمريكا\`\n\n` +
       `⏱️ You have **${config.dropClaimMs / 1000} seconds**.`;
   }
 
