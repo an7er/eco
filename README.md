@@ -73,7 +73,7 @@ SQLite database is created automatically at `./data/economy.db`.
 
 ## Notes
 
-- Drops run automatically every **1–10 minutes** in `GENERAL_CHANNEL_ID`, alternating pirate box / flag.
+- Drops run automatically every **1–5 minutes** in `GENERAL_CHANNEL_ID`, alternating pirate box / flag.
 - Only one drop is live at a time; each lasts **60s**. Unclaimed drop messages are deleted.
 - First to type the code wins; `.streak` pays **1.3% of 5-drop total** at 5 wins.
 - Banked money is safe from `.rob`.

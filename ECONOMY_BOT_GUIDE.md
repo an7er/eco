@@ -127,7 +127,7 @@ OPENAI_API_KEY=optional
 - `.daily` — 24h cooldown, random **$3,500–$4,000**
 - `.work` — 1h cooldown, random **$800–$2,500**
 - `.shop`, `.buy`, `.inventory`, `.buyrole`, `.sell`
-- **Drop system:** one timer, random **1–10 min**, alternating:
+- **Drop system:** one timer, random **1–5 min**, alternating:
   - pirate box GIF + plain code, **$800–$3,500**
   - flag + **8-character mixed case+number code**, **$500–$2,200**
   - **60s** to claim, first correct answer in general chat wins; unclaimed drop messages are deleted
